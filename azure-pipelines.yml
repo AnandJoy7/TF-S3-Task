@@ -1,0 +1,37 @@
+# azure-pipelines.yml
+trigger:
+- main  # Adjust the branch name if needed
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  AWS_REGION: 'us-east-1'  # Replace with your AWS region
+  AWS_SERVICE_CONNECTION: 'AwsConnect7'  # Replace with your AWS service connection name
+
+stages:
+- stage: Deploy
+  jobs:
+  - job: Terraform
+    steps:
+    - checkout: self
+
+    - task: UsePythonVersion@0
+      inputs:
+        versionSpec: '3.x'
+
+    - task: TerraformInstaller@0
+      inputs:
+        terraformVersion: 'latest'
+
+    - script: |
+        terraform init
+      displayName: 'Initialize Terraform'
+
+    - script: |
+        terraform apply -auto-approve
+      displayName: 'Apply Terraform Configuration'
+      env:
+        AWS_ACCESS_KEY_ID: $(AWS_ACCESS_KEY_ID)
+        AWS_SECRET_ACCESS_KEY: $(AWS_SECRET_ACCESS_KEY)
+        AWS_REGION: $(AWS_REGION)
